@@ -1,25 +1,22 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Router, Switch, Route, Redirect } from 'react-router';
+import { createBrowserHistory } from 'history';
+import Example1 from './components/Example1';
+import Example2 from './components/Example2';
+import Example3 from './components/Example3';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router history={createBrowserHistory()}>
+      <Switch>
+        <Route path="/example1" component={Example1} />
+        <Route path="/example2" component={Example2} />
+        <Route path="/example3" component={Example3} />
+        <Route path="/example4">useContext example</Route>
+        <Route path="/example5">useReducer example</Route>
+        <Redirect to="/example1" />
+      </Switch>
+    </Router>
   );
 }
 
