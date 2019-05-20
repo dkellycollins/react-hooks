@@ -24,7 +24,7 @@ const characterWeapon = {
   ],
   Mage: [
     { label: 'Default Staff', value: 'Default Staff' },
-    { label: 'Staff of Klovzaannaak', value: 'Staff of Eovuntayl' }
+    { label: 'Staff of Klovzaannaak', value: 'Staff of Klovzaannaak' }
   ]
 };
 

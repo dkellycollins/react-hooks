@@ -73,7 +73,7 @@ class Example2 extends Component {
                   select
                   label="Class"
                   value={selectedClass}
-                  onChange={this.onClassChange.bind(this)}
+                  onChange={this.onClassChange}
                   fullWidth
                 >
                   {availableClasses.map(option => (

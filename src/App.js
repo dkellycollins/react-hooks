@@ -4,6 +4,7 @@ import { createBrowserHistory } from 'history';
 import Example1 from './components/Example1';
 import Example2 from './components/Example2';
 import Example3 from './components/Example3';
+import Demo from './components/Demo';
 
 function App() {
   return (
@@ -12,8 +13,7 @@ function App() {
         <Route path="/example1" component={Example1} />
         <Route path="/example2" component={Example2} />
         <Route path="/example3" component={Example3} />
-        <Route path="/example4">useContext example</Route>
-        <Route path="/example5">useReducer example</Route>
+        <Route path="/demo" component={Demo} />
         <Redirect to="/example1" />
       </Switch>
     </Router>
