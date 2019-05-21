@@ -2,10 +2,15 @@ import React, { Component } from 'react';
 import { TextField, Paper, MenuItem, Grid, Typography } from '@material-ui/core';
 import CharacterClassesProvider from '../services/CharacterClassesProvider';
 import CharacterWeaponsProvider from '../services/CharacterWeaponsProvider';
-import { isEqual } from 'lodash';
+import { debounce, isEqual } from 'lodash';
 
+/**
+ * In this example we continue building on the previous example to "save" the state of the form after 1 second. 
+ * For the purposes of the demo, this just updates the component with the saved data. To convert this example to a functional
+ * component we can create a custom hook that debounces changes.
+ */
 
-class Example3 extends Component {
+class Example4 extends Component {
 
   state = {
     character: {
@@ -13,52 +18,59 @@ class Example3 extends Component {
       selectedClass: 'Warrior',
       selectedWeapon: 'Axe',
     },
+    savedCharacter: null,
     availableClasses: [],
     availableWeapons: []
   };
 
   componentDidMount = async () => {
-    const character = this.loadCharacter({ name: '', selectedClass: 'Warrior', selectedWeapon: 'Axe' });
     const availableClasses = await CharacterClassesProvider(); 
-    const availableWeapons = await CharacterWeaponsProvider(character.selectedClass);
+    const selectedClass = availableClasses[0].value;
+
+    const availableWeapons = await CharacterWeaponsProvider(selectedClass);
+    const selectedWeapon = availableWeapons[0].value;
 
     this.setState({
-      character: character,
+      character: {
+        ...this.state.character,
+        selectedClass: selectedClass,
+        selectedWeapon: selectedWeapon
+      },
       availableClasses: availableClasses,
       availableWeapons: availableWeapons
     });
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate = (prevProps, prevState) => {
     if (!isEqual(prevState.character, this.state.character)) {
-      localStorage.setItem('character', JSON.stringify(this.state.character));
+      this.saveCharacter()
     }
   }
 
-  loadCharacter = (defaultValue) => {
-    try {
-      const character = localStorage.getItem('character');
-      if (!character) {
-        return defaultValue;
+  saveCharacter = debounce(() => {
+    this.setState({
+      savedCharacter: {
+        ...this.state.character,
+        savedOn: new Date()
       }
-
-      return JSON.parse(character);
-    }
-    catch(error) {
-      console.warn(error);
-      return defaultValue;
-    }
-  }
+    });
+  }, 2000);
 
   onClassChange = async (event) => {
     const selectedClass = event.target.value;
     this.setState({
-      selectedClass: selectedClass
+      character: {
+        ...this.state.character,
+        selectedClass: selectedClass
+      }
     });
 
     const availableWeapons = await CharacterWeaponsProvider(selectedClass);
     this.setState({
-      selectedWeapon: availableWeapons[0].value,
+      character: {
+        ...this.state.character,
+        selectedWeapon: availableWeapons[0].value
+      },
       availableWeapons: availableWeapons
     });
   }
@@ -80,9 +92,9 @@ class Example3 extends Component {
                     this.setState({ 
                       character: {
                         ...character,
-                        name: event.target.value 
+                        name: event.target.value
                       }
-                    });
+                    })
                   }}
                   fullWidth
                 />  
@@ -137,4 +149,4 @@ class Example3 extends Component {
   }
 }
 
-export default Example3;
+export default Example4;

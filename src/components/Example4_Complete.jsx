@@ -3,33 +3,23 @@ import { TextField, Paper, MenuItem, Grid, Typography } from '@material-ui/core'
 import CharacterClassesProvider from '../services/CharacterClassesProvider';
 import CharacterWeaponsProvider from '../services/CharacterWeaponsProvider';
 
-function useLocalStorage(key, defaultState) {
-  const [state, setState] = useState(() => {
-    try {
-      const value = localStorage.getItem(key);
-      if (!value) {
-        return defaultState;
-      }
-
-      return JSON.parse(value);
-    }
-    catch (error) {
-      console.warn(error);
-      return defaultState;
-    }
-  });
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(state));
-  }, [key, state]);
+    const timeout = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timeout);
+  }, [value, delay]);
 
-  return [state, setState];
+  return debouncedValue;
 }
 
-function Example3() {
-  const [character, setCharacter] = useLocalStorage('Character', { name: '', selectedClass: 'Warrior', selectedWeapon: 'Axe' });
+function Example4() {
+  const [character, setCharacter] = useState({ name: '', selectedClass: 'Warrior', selectedWeapon: 'Axe' });
+  const [savedCharacter, setSavedCharacter] = useState(null);
   const [availableClasses, setAvailableClasses] = useState([]);
   const [availableWeapons, setAvailableWeapons] = useState([]);
+  const debouncedCharacter = useDebounce(character, 2000);
 
   //Load the list of classes.
   useEffect(() => {
@@ -45,16 +35,31 @@ function Example3() {
     }
     loadAvailableWeapons();
   }, [character.selectedClass]);
+  //Select the first class when the list of classes changes.
+  useEffect(() => {
+    if (availableClasses.length !== 0) {
+      setCharacter(c => ({
+        ...c,
+        selectedClass: availableClasses[0].value
+      }));
+    }
+  }, [availableClasses]);
   //Select the first weapon then the list of weapons changes.
   useEffect(() => {
-    const selectedWeapon = availableWeapons.find(weapon => weapon.value === character.selectedWeapon);
-    if (availableWeapons.length !== 0 && !selectedWeapon) {
+    if (availableWeapons.length !== 0) {
       setCharacter(c => ({
         ...c,
         selectedWeapon: availableWeapons[0].value
       }));
     }
-  }, [character.selectedWeapon, availableWeapons]);
+  }, [availableWeapons]);
+  //Update the savedCharacter when the debouncedCharacter changes.
+  useEffect(() => {
+    setSavedCharacter({
+      ...debouncedCharacter,
+      savedOn: new Date()
+    });
+  }, [debouncedCharacter]);
 
   return (
     <>
@@ -75,7 +80,7 @@ function Example3() {
                 select
                 label="Class"
                 value={character.selectedClass}
-                onChange={event => setCharacter({ ...character, selectedClass: event.target.value})}
+                onChange={event => setCharacter({ ...character, selectedClass: event.target.value })}
                 fullWidth
               >
                 {availableClasses.map(option => (
@@ -90,7 +95,7 @@ function Example3() {
                 select
                 label="Weapon"
                 value={character.selectedWeapon}
-                onChange={event => setCharacter({ ...character, selectedWeapon: event.target.value })}
+                onChange={event => setCharacter({ ...character, selectedClass: event.target.value })}
                 fullWidth
               >
                 {availableWeapons.map(option => (
@@ -107,6 +112,7 @@ function Example3() {
         <pre>
           {JSON.stringify({
             character,
+            savedCharacter,
             availableClasses,
             availableWeapons
           }, null, 2)}
@@ -116,4 +122,4 @@ function Example3() {
   );
 }
 
-export default Example3;
+export default Example4;
