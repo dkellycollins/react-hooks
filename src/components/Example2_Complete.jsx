@@ -24,12 +24,6 @@ function Example2() {
     }
     loadAvailableWeapons();
   }, [selectedClass]);
-  //Select the first class when the list of classes changes.
-  useEffect(() => {
-    if (availableClasses.length !== 0) {
-      setSelectedClass(availableClasses[0].value);
-    }
-  }, [availableClasses]);
   //Select the first weapon then the list of weapons changes.
   useEffect(() => {
     if (availableWeapons.length !== 0) {
