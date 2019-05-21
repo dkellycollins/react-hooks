@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { TextField, Paper, MenuItem, Grid, Typography } from '@material-ui/core';
 import CharacterClassesProvider from '../services/CharacterClassesProvider';
 import CharacterWeaponsProvider from '../services/CharacterWeaponsProvider';
-import { debounce } from 'lodash';
+import { debounce, isEqual } from 'lodash';
 
 /**
  * In this example we continue building on the previous example to "save" the state of the form after 1 second. 
@@ -38,7 +38,13 @@ class Example3 extends Component {
       },
       availableClasses: availableClasses,
       availableWeapons: availableWeapons
-    }, this.saveCharacter);
+    });
+  }
+
+  componentDidUpdate = (prevProps, prevState) => {
+    if (!isEqual(prevState.character, this.state.character)) {
+      this.saveCharacter()
+    }
   }
 
   saveCharacter = debounce(() => {
@@ -57,7 +63,7 @@ class Example3 extends Component {
         ...this.state.character,
         selectedClass: selectedClass
       }
-    }, this.saveCharacter);
+    });
 
     const availableWeapons = await CharacterWeaponsProvider(selectedClass);
     this.setState({
@@ -66,7 +72,7 @@ class Example3 extends Component {
         selectedWeapon: availableWeapons[0].value
       },
       availableWeapons: availableWeapons
-    }, this.saveCharacter);
+    });
   }
 
   render = () => {
@@ -88,7 +94,7 @@ class Example3 extends Component {
                         ...character,
                         name: event.target.value
                       }
-                    }, this.saveCharacter)
+                    })
                   }}
                   fullWidth
                 />  
@@ -119,7 +125,7 @@ class Example3 extends Component {
                         ...character,
                         selectedWeapon: event.target.value 
                       }
-                    }, this.saveCharacter);
+                    });
                   }}
                   fullWidth
                 >
