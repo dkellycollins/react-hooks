@@ -2,53 +2,88 @@ import React, { Component } from 'react';
 import { TextField, Paper, MenuItem, Grid, Typography } from '@material-ui/core';
 import CharacterClassesProvider from '../services/CharacterClassesProvider';
 import CharacterWeaponsProvider from '../services/CharacterWeaponsProvider';
-import { isEqual } from 'lodash';
+import { debounce } from 'lodash';
 
 
 class Example3 extends Component {
 
   state = {
-    character: {
-      name: '',
-      selectedClass: 'Warrior',
-      selectedWeapon: 'Axe',
-    },
+    name: '',
+    selectedClass: 'Warrior',
+    selectedWeapon: 'Axe',
     availableClasses: [],
     availableWeapons: []
   };
 
   componentDidMount = async () => {
-    const character = this.loadCharacter({ name: '', selectedClass: 'Warrior', selectedWeapon: 'Axe' });
+    const name = this.load('name', '');
+    const selectedClass = this.load('selectedClass', 'Warrior');
+    const selectedWeapon = this.load('selectedWeapon', 'Axe');
     const availableClasses = await CharacterClassesProvider(); 
-    const availableWeapons = await CharacterWeaponsProvider(character.selectedClass);
+    const availableWeapons = await CharacterWeaponsProvider(selectedClass);
 
     this.setState({
-      character: character,
+      name: name,
+      selectedClass: selectedClass,
+      selectedWeapon: selectedWeapon,
       availableClasses: availableClasses,
       availableWeapons: availableWeapons
     });
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (!isEqual(prevState.character, this.state.character)) {
-      localStorage.setItem('character', JSON.stringify(this.state.character));
+    if (prevState.name !== this.state.name) {
+      this.saveName(this.state.name);
+    }
+    if (prevState.selectedClass !== this.state.selectedClass) {
+      this.saveSelectedClass(this.state.selectedClass);
+    }
+    if (prevState.selectedWeapon !== this.state.selectedWeapon) {
+      this.saveSelectedWeapon(this.state.selectedWeapon);
     }
   }
 
-  loadCharacter = (defaultValue) => {
+  load = (key, defaultValue) => {
     try {
-      const character = localStorage.getItem('character');
-      if (!character) {
+      const value = localStorage.getItem(key);
+      if (!value) {
         return defaultValue;
       }
 
-      return JSON.parse(character);
+      return JSON.parse(value);
     }
     catch(error) {
       console.warn(error);
       return defaultValue;
     }
   }
+
+  saveName = debounce((value) => {
+    try {
+      localStorage.setItem('name', JSON.stringify(value));
+    }
+    catch (error) {
+      console.warn(error);
+    }
+  }, 1000);
+
+  saveSelectedClass = debounce((value) => {
+    try {
+      localStorage.setItem('selectedClass', JSON.stringify(value));
+    }
+    catch (error) {
+      console.warn(error);
+    }
+  }, 1000);
+
+  saveSelectedWeapon = debounce((value) => {
+    try {
+      localStorage.setItem('selectedWeapon', JSON.stringify(value));
+    }
+    catch (error) {
+      console.warn(error);
+    }
+  }, 1000);
 
   onClassChange = async (event) => {
     const selectedClass = event.target.value;
@@ -64,7 +99,7 @@ class Example3 extends Component {
   }
 
   render = () => {
-    const { character, availableClasses, availableWeapons } = this.state;
+    const { name, selectedClass, selectedWeapon, availableClasses, availableWeapons } = this.state;
 
     return (
       <>
@@ -75,15 +110,8 @@ class Example3 extends Component {
               <Grid item xs={4}>
                 <TextField 
                   label="Character Name"
-                  value={character.name}
-                  onChange={event => {
-                    this.setState({ 
-                      character: {
-                        ...character,
-                        name: event.target.value 
-                      }
-                    });
-                  }}
+                  value={name}
+                  onChange={event => this.setState({ name: event.target.value })}
                   fullWidth
                 />  
               </Grid>
@@ -91,7 +119,7 @@ class Example3 extends Component {
                 <TextField
                   select
                   label="Class"
-                  value={character.selectedClass}
+                  value={selectedClass}
                   onChange={this.onClassChange}
                   fullWidth
                 >
@@ -106,15 +134,8 @@ class Example3 extends Component {
                 <TextField
                   select
                   label="Weapon"
-                  value={character.selectedWeapon}
-                  onChange={event => {
-                    this.setState({ 
-                      character: {
-                        ...character,
-                        selectedWeapon: event.target.value 
-                      }
-                    });
-                  }}
+                  value={selectedWeapon}
+                  onChange={event => this.setState({ selectedWeapon: event.target.value })}
                   fullWidth
                 >
                   {availableWeapons.map(option => (

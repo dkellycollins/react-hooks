@@ -3,7 +3,7 @@ import { TextField, Paper, MenuItem, Grid, Typography } from '@material-ui/core'
 import CharacterClassesProvider from '../services/CharacterClassesProvider';
 import CharacterWeaponsProvider from '../services/CharacterWeaponsProvider';
 
-function useLocalStorage(key, defaultState) {
+function useLocalStorage(key, defaultState, delay) {
   const [state, setState] = useState(() => {
     try {
       const value = localStorage.getItem(key);
@@ -20,14 +20,24 @@ function useLocalStorage(key, defaultState) {
   });
 
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(state));
-  }, [key, state]);
+    const timeout = setTimeout(() => {
+      try {
+        localStorage.setItem(key, JSON.stringify(state));
+      }
+      catch (error) {
+        console.warn(error);
+      }
+    }, delay);
+    return () => clearTimeout(timeout);
+  }, [key, state, delay]);
 
   return [state, setState];
 }
 
 function Example3() {
-  const [character, setCharacter] = useLocalStorage('Character', { name: '', selectedClass: 'Warrior', selectedWeapon: 'Axe' });
+  const [name, setName] = useLocalStorage('name', '', 1000);
+  const [selectedClass, setSelectedClass] = useLocalStorage('selectedClass', 'Warrior', 1000);
+  const [selectedWeapon, setSelectedWeapon] = useLocalStorage('selectedWeapon', 'Axe', 1000);
   const [availableClasses, setAvailableClasses] = useState([]);
   const [availableWeapons, setAvailableWeapons] = useState([]);
 
@@ -41,20 +51,17 @@ function Example3() {
   //Load the list of weapons when a class has been selected.
   useEffect(() => {
     const loadAvailableWeapons = async () => {
-      setAvailableWeapons(await CharacterWeaponsProvider(character.selectedClass));
+      setAvailableWeapons(await CharacterWeaponsProvider(selectedClass));
     }
     loadAvailableWeapons();
-  }, [character.selectedClass]);
+  }, [selectedClass]);
   //Select the first weapon then the list of weapons changes.
   useEffect(() => {
-    const selectedWeapon = availableWeapons.find(weapon => weapon.value === character.selectedWeapon);
-    if (availableWeapons.length !== 0 && !selectedWeapon) {
-      setCharacter(c => ({
-        ...c,
-        selectedWeapon: availableWeapons[0].value
-      }));
+    const match = availableWeapons.find(weapon => weapon.value === selectedWeapon);
+    if (availableWeapons.length !== 0 && !match) {
+      setSelectedWeapon(availableWeapons[0].value);
     }
-  }, [character.selectedWeapon, availableWeapons]);
+  }, [availableWeapons, selectedWeapon]);
 
   return (
     <>
@@ -65,8 +72,8 @@ function Example3() {
             <Grid item xs={4}>
               <TextField 
                 label="Character Name"
-                value={character.name}
-                onChange={event => setCharacter({ ...character, name: event.target.value })}
+                value={name}
+                onChange={event => setName(event.target.value)}
                 fullWidth
               />  
             </Grid>
@@ -74,8 +81,8 @@ function Example3() {
               <TextField
                 select
                 label="Class"
-                value={character.selectedClass}
-                onChange={event => setCharacter({ ...character, selectedClass: event.target.value})}
+                value={selectedClass}
+                onChange={event => setSelectedClass(event.target.value)}
                 fullWidth
               >
                 {availableClasses.map(option => (
@@ -89,8 +96,8 @@ function Example3() {
               <TextField
                 select
                 label="Weapon"
-                value={character.selectedWeapon}
-                onChange={event => setCharacter({ ...character, selectedWeapon: event.target.value })}
+                value={selectedWeapon}
+                onChange={event => setSelectedClass(event.target.value)}
                 fullWidth
               >
                 {availableWeapons.map(option => (
@@ -106,7 +113,9 @@ function Example3() {
       <Paper style={{ margin: 16, padding: 16 }}>
         <pre>
           {JSON.stringify({
-            character,
+            name,
+            selectedClass,
+            selectedWeapon,
             availableClasses,
             availableWeapons
           }, null, 2)}
