@@ -4,7 +4,6 @@ import CharacterClassesProvider from '../services/CharacterClassesProvider';
 import CharacterWeaponsProvider from '../services/CharacterWeaponsProvider';
 import { debounce } from 'lodash';
 
-
 class Example3 extends Component {
 
   state = {

@@ -3,16 +3,6 @@ import { TextField, Paper, MenuItem, Grid, Typography } from '@material-ui/core'
 import CharacterClassesProvider from '../services/CharacterClassesProvider';
 import CharacterWeaponsProvider from '../services/CharacterWeaponsProvider';
 
-/**
- * In this example we are "fetching" data from a service instead of using hardcoded values. Update this class to be a
- * functional component using useState and useEffect to fetch the data.
- * 
- * Notable behaviour around fetching data:
- *  - When the availableClasses are fetch, selectedClass should be set to the first result.
- *  - When a class is selected, the list of available weapons should be updated.
- *  - When the list of available weapons are fetched, selectedWeapon should be set to the first result.
- */
-
 class Example2 extends Component {
 
   state = {
